@@ -41,6 +41,7 @@ export function Home() {
     await itemsStorage.add(newItem);
     await itemsByStatus();
     setDescription("");
+    setFilter(FilterStatus.PENDING);
   }
 
   async function itemsByStatus() {
