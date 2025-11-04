@@ -12,28 +12,22 @@ import { Input } from "@/components/Input";
 import { Filter } from "@/components/Filter";
 import { FilterStatus } from "@/types/FilterStatus";
 import { Item } from "@/components/Item";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { itemsStorage, ItemStorage } from "@/storage/itemsStorage";
 
 const FILTER_STATUS = [FilterStatus.PENDING, FilterStatus.DONE];
-
-type Description = {
-  id: string;
-  description: string;
-  status: FilterStatus;
-};
-
 export function Home() {
   //states
-  const [filter, setFilter] = useState<FilterStatus>();
+  const [filter, setFilter] = useState<FilterStatus>(FilterStatus.PENDING);
   const [description, setDescription] = useState("");
-  const [items, setItems] = useState<Description[]>([]);
+  const [items, setItems] = useState<ItemStorage[]>([]);
 
   //functions
-  function updateStatus(value: FilterStatus) {
+  async function updateStatus(value: FilterStatus) {
     setFilter(value);
   }
 
-  function handleAdd() {
+  async function handleAdd() {
     if (!description.trim()) {
       Alert.alert("Adicionar", "Por favor, informar item para compra.");
     }
@@ -44,14 +38,30 @@ export function Home() {
       status: FilterStatus.PENDING,
     };
 
-    setItems((prevState) => [newItem, ...prevState]);
+    await itemsStorage.add(newItem);
+    await itemsByStatus();
+    setDescription("");
   }
+
+  async function itemsByStatus() {
+    try {
+      const response = await itemsStorage.getByStatus(filter);
+      setItems(response);
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Erro", "Não foi possível carregar os itens.");
+    }
+  }
+
+  useEffect(() => {
+    void itemsByStatus();
+  }, [filter]);
 
   return (
     <View style={styles.container}>
       <Image style={styles.logo} source={require("@/assets/logo.png")} />
       <View style={styles.form}>
-        <Input onChangeText={setDescription} />
+        <Input onChangeText={setDescription} value={description} />
         <Button title="Adicionar" onPress={handleAdd} />
       </View>
       <View style={styles.content}>
@@ -59,8 +69,8 @@ export function Home() {
           {FILTER_STATUS.map((status) => (
             <Filter
               key={status}
-              isActive={status === filter}
               status={status}
+              isActive={status === filter}
               onPress={() => updateStatus(status)}
             />
           ))}
