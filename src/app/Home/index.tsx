@@ -54,6 +54,43 @@ export function Home() {
     }
   }
 
+  async function handleRemoveItem(id: string) {
+    try {
+      await itemsStorage.remove(id);
+      await itemsByStatus();
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Remover", "Não foi possível remover o item.");
+    }
+  }
+
+  async function onClear() {
+    try {
+      await itemsStorage.clear();
+      setItems([]);
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Limpar", "Não foi possível remover todos os itens.");
+    }
+  }
+
+  function handleClearList() {
+    Alert.alert(
+      "Limpar lista",
+      "Tem certeza que deseja remover todos os itens?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Limpar",
+          onPress: onClear,
+        },
+      ],
+    );
+  }
+
   useEffect(() => {
     void itemsByStatus();
   }, [filter]);
@@ -75,7 +112,10 @@ export function Home() {
               onPress={() => updateStatus(status)}
             />
           ))}
-          <TouchableOpacity style={styles.clearButton}>
+          <TouchableOpacity
+            style={styles.clearButton}
+            onPress={handleClearList}
+          >
             <Text style={styles.clearText}>Limpar</Text>
           </TouchableOpacity>
         </View>
@@ -91,7 +131,7 @@ export function Home() {
           renderItem={({ item }) => (
             <Item
               data={item}
-              onRemove={() => console.log("Remover")}
+              onRemove={() => handleRemoveItem(item.id)}
               onStatusChange={() => console.log("Status change")}
             />
           )}

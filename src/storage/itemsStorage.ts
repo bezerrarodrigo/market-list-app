@@ -38,4 +38,19 @@ async function add(newItem: ItemStorage) {
   return updatedItems;
 }
 
-export const itemsStorage = { get, getByStatus, add };
+async function remove(itemID: string) {
+  const items = await get();
+  const updatedItems = items.filter((item) => item.id !== itemID);
+  await save(updatedItems);
+  return updatedItems;
+}
+
+async function clear() {
+  try {
+    await AsyncStorage.removeItem(ITEMS_STORAGE_KEY);
+  } catch (error) {
+    throw new Error("CLEAR_LIST: " + error);
+  }
+}
+
+export const itemsStorage = { get, getByStatus, add, remove, clear };
