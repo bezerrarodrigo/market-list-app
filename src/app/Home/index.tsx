@@ -39,6 +39,7 @@ export function Home() {
     };
 
     await itemsStorage.add(newItem);
+    Alert.alert("Sucesso!", `Item ${description} adicionado com sucesso.`);
     await itemsByStatus();
     setDescription("");
     setFilter(FilterStatus.PENDING);
